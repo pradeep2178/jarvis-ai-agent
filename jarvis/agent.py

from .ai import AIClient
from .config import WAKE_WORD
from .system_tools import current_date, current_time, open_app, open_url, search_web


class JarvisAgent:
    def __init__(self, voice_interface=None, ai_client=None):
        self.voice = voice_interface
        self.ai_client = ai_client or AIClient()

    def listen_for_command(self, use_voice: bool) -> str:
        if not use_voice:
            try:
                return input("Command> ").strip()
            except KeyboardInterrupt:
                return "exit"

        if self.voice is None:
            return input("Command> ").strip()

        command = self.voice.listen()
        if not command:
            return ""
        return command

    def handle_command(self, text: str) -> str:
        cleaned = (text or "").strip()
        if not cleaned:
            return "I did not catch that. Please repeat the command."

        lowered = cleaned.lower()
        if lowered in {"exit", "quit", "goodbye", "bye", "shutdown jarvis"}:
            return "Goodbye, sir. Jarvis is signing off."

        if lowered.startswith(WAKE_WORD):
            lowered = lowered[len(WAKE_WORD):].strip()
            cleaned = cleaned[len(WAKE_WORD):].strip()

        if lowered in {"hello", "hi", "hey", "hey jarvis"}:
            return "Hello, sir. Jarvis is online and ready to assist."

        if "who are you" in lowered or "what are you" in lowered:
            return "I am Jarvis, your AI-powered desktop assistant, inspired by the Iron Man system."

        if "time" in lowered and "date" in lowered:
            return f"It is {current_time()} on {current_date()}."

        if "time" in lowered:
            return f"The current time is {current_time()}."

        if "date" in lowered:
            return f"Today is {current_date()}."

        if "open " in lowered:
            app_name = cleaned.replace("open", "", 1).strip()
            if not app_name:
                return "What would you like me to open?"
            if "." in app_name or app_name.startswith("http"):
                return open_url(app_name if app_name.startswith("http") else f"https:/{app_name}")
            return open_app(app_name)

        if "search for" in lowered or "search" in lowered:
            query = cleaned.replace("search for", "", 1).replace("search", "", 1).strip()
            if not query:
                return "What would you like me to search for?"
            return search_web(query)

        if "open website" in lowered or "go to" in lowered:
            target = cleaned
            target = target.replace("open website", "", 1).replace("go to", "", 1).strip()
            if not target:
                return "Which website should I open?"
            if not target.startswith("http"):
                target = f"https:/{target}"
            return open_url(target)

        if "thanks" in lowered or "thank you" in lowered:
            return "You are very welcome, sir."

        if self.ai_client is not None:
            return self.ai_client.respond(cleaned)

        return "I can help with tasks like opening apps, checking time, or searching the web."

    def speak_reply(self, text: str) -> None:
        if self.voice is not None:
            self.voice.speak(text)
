@@ -1,0 +1,80 @@
+import os
+import subprocess
+import webbrowser
+from datetime import datetime
+from urllib.parse import quote_plus
+
+
+def current_time() -> str:
+    return datetime.now().strftime("%I:%M %p")
+
+
+def current_date() -> str:
+    return datetime.now().strftime("%A, %B %d, %Y")
+
+
+def open_url(url: str) -> str:
+    try:
+        webbrowser.open(url)
+        return f"Opening {url}"
+    except Exception as exc:  # pragma: no cover - runtime failure path
+        return f"I could not open the URL: {exc}"
+
+
+def open_app(app_name: str) -> str:
+    normalized = app_name.strip().lower()
+    aliases = {
+        "notepad": "notepad.exe",
+        "calculator": "calc.exe",
+        "paint": "mspaint.exe",
+        "command prompt": "cmd.exe",
+        "cmd": "cmd.exe",
+        "task manager": "taskmgr.exe",
+        "file explorer": "explorer.exe",
+        "explorer": "explorer.exe",
+        "browser": "https://www.google.com",
+        "chrome": "https://www.google.com",
+        "youtube": "https://www.youtube.com",
+        "google": "https://www.google.com",
+        "github": "https://github.com",
+        "discord": "https://discord.com",
+        "spotify": "https://open.spotify.com",
+    }
+
+    if normalized in aliases:
+        target = aliases[normalized]
+        if target.startswith("http://") or target.startswith("https://"):
+            return open_url(target)
+
+        if os.name == "nt":
+            try:
+                os.startfile(target)
+                return f"Opening {app_name}"
+            except Exception:
+                pass
+
+    if os.name == "nt":
+        for candidate in [
+            app_name,
+            f"{app_name}.exe",
+            os.path.join(os.environ.get("ProgramFiles", "C:\\Program Files"), app_name),
+            os.path.join(os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)"), app_name),
+        ]:
+            if os.path.exists(candidate):
+                try:
+                    os.startfile(candidate)
+                    return f"Opening {app_name}"
+                except Exception:
+                    pass
+
+    try:
+        subprocess.Popen(app_name)
+        return f"Opening {app_name}"
+    except Exception:
+        return f"I could not find or open '{app_name}'. Try a common app name like Notepad or Calculator."
+
+
+def search_web(query: str) -> str:
+    encoded = quote_plus(query)
+    url = f"https://www.google.com/search?q={encoded}"
+    return open_url(url)

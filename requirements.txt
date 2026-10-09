@@ -1,0 +1,12 @@
+# SpeechRecognition and audio support
+SpeechRecognition==3.10.4
+pyaudio==0.2.14
+
+# Text-to-speech
+pyttsx3==2.90
+
+# AI integration
+openai==1.40.0
+
+# Environment/config loading
+python-dotenv==1.0.1
